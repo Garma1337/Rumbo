@@ -9,7 +9,7 @@ class ActivityUtil(object):
     """
 
     @staticmethod
-    def is_crash_team_rumble_stream(activity: discord.Streaming) -> bool:
+    def is_crash_team_rumble_stream(activity: discord.BaseActivity) -> bool:
         """
         Checks if an activity is a crash team rumble stream.
         :param activity:
