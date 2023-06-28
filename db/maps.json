@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Tiki Towers",
+    "playable": true
+  },
+  {
+    "name": "Just Beachy",
+    "playable": true
+  },
+  {
+    "name": "Calamity Canyon",
+    "playable": true
+  },
+  {
+    "name": "Serenity Gardens",
+    "playable": true
+  },
+  {
+    "name": "City Scrape",
+    "playable": true
+  },
+  {
+    "name": "N. Sanity Caverns",
+    "playable": true
+  },
+  {
+    "name": "Rusted Refinery",
+    "playable": true
+  },
+  {
+    "name": "Tar Valley",
+    "playable": true
+  },
+  {
+    "name": "Surreal Summit",
+    "playable": true
+  },
+  {
+    "name": "Bogged Down",
+    "playable": false
+  }
+]

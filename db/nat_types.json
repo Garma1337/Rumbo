@@ -1,0 +1,26 @@
+[
+  {
+    "key": "nat1",
+    "name": "NAT 1",
+    "description": "Choose if you are not behind a firewall.",
+    "default": false
+  },
+  {
+    "key": "nat2o",
+    "name": "NAT 2 Open",
+    "description": "Choose if you have port forwarding or UPNP enabled.",
+    "default": false
+  },
+  {
+    "key": "nat2c",
+    "name": "NAT 2 Closed",
+    "description": "Choose if you are unsure.",
+    "default": true
+  },
+  {
+    "key": "nat3",
+    "name": "NAT 3",
+    "description": "Choose if you use mobile hotspot internet.",
+    "default": false
+  }
+]
