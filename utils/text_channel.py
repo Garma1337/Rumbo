@@ -3,7 +3,7 @@
 from enum import Enum
 
 import discord
-from discord import TextChannel
+from discord import TextChannel, Message, NotFound, Forbidden, HTTPException
 
 from lib.config import Config
 
@@ -73,6 +73,24 @@ class TextChannelUtil(object):
     """
     Various text channel utilities.
     """
+
+    @staticmethod
+    async def fetch_message(channel: TextChannel, message_id: int) -> Message | None:
+        """
+        Gets a message by ID.
+        :param channel:
+        :param message_id:
+        """
+        try:
+            message: Message = await channel.fetch_message(message_id)
+        except NotFound:
+            return None
+        except Forbidden:
+            return None
+        except HTTPException:
+            return None
+
+        return message
 
     @staticmethod
     async def send_alert(channel: TextChannel, alert_type: AlertType, content: str) -> discord.Message:

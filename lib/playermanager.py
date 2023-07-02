@@ -29,6 +29,10 @@ class PlayerProfile(object):
     def get_embed(self, display_name: str, joined_at: datetime, is_bot: bool, avatar_url: str) -> discord.Embed:
         """
         Returns the embed to render a player profile.
+        :param display_name:
+        :param joined_at:
+        :param is_bot:
+        :param avatar_url:
         :return:
         """
         profile_fields: List[str] = [

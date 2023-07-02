@@ -4,7 +4,6 @@
     "name": "Europe",
     "description": "Germany, Finland, Italy, Spain ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region2",
@@ -76,7 +75,6 @@
     "name": "Africa",
     "description": "Egypt, Ghana, South Africa, Somalia ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region1",
@@ -152,7 +150,6 @@
     "name": "North America",
     "description": "USA, Canada, Greenland ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region1",
@@ -201,7 +198,6 @@
     "name": "South America",
     "description": "Peru, Chile, Brazil, Colombia ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region3",
@@ -241,7 +237,6 @@
     "name": "West Asia",
     "description": "Qatar, Iran, Saudi Arabia, Israel ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region1",
@@ -284,7 +279,6 @@
     "name": "East Asia",
     "description": "Japan, China, South Korea, Macau ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region4",
@@ -317,7 +311,6 @@
     "name": "Oceania",
     "description": "Australia, Tuvalu, Samoa, Kiribati ...",
     "default": false,
-    "rankedEnabled": true,
     "profileEnabled": true,
     "nearbyRegions": [
       "region4",
@@ -358,7 +351,6 @@
     "name": "No region lock",
     "description": "Worldwide",
     "default": true,
-    "rankedEnabled": true,
     "profileEnabled": false,
     "nearbyRegions": [],
     "countries": []

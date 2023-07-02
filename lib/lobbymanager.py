@@ -2,15 +2,19 @@
 
 import random
 from datetime import datetime
-from typing import List
+from typing import List, NoReturn
 
-import discord
+from discord import Embed, Guild, TextChannel, Message
 
 from db.models.lobby import Lobby
 from db.models.player import Player
 from db.models.team import Team
-from lib.config import Config
+from db.repository.teamrepository import TeamRepository
 from lib.db import DbUtil
+from lib.services import config, bot
+from utils.bot import BotUtil
+from utils.guild import GuildUtil
+from utils.text_channel import TextChannelUtil, ChannelNames
 
 
 class LobbyManager(object):
@@ -19,18 +23,17 @@ class LobbyManager(object):
     """
 
     @staticmethod
-    async def get_embed(lobby: Lobby) -> discord.Embed:
+    async def get_embed(lobby: Lobby) -> Embed:
         """
         Returns the embed for the lobby.
         :param lobby:
         :return:
         """
-        config: Config = Config.from_file()
         icon: str = 'https://i.imgur.com/dQFJiy3.png'
         players: List[Player] = await LobbyManager.get_players(lobby)
         maps: List[str] = LobbyManager.get_maps(lobby)
 
-        embed: discord.Embed = discord.Embed(
+        embed: Embed = Embed(
             colour=config.default_embed_color,
             timestamp=datetime.now()
         )
@@ -43,10 +46,12 @@ class LobbyManager(object):
             icon_url=icon
         )
 
-        if len(players) > 0:
+        player_count: int = LobbyManager.get_player_count(lobby)
+
+        if player_count > 0:
             embed.add_field(
                 name=':busts_in_silhouette: **Players**',
-                value='\n'.join([LobbyManager.get_player_text(player) for player in players])
+                value=LobbyManager.get_players_text(lobby)
             )
             embed.add_field(
                 name=':credit_card: **Activision ID**',
@@ -56,7 +61,7 @@ class LobbyManager(object):
         if len(maps) > 0:
             embed.add_field(
                 name=':stadium: **Maps**',
-                value='\n'.join([])
+                value='\n'.join(LobbyManager.get_maps(lobby))
             )
 
         embed.add_field(
@@ -67,14 +72,110 @@ class LobbyManager(object):
         return embed
 
     @staticmethod
+    async def add_player_to_lobby(lobby: Lobby, player: Player) -> NoReturn:
+        """
+        Adds a player to a lobby.
+        :param lobby:
+        :param player:
+        """
+        team: Team = await TeamRepository.find_one_by_player(player)
+        if team:
+            players: List[player] = team.players
+        else:
+            players: List[player] = [player]
+
+        violations: List[str] = LobbyManager.get_join_violations(lobby, players)
+
+        if len(violations) > 0:
+            guild: Guild | None = await BotUtil.fetch_guild(bot, lobby.guild)
+            lobby_channel: TextChannel | None = GuildUtil.find_channel_by_name(guild, ChannelNames.LobbyChannel.value)
+
+            content: str = '\n'.join(violations)
+            await lobby_channel.send(content)
+            return
+
+        lobby.teams.add(players)
+        await lobby.save()
+
+        if LobbyManager.get_player_count(lobby) == lobby.max_players:
+            await LobbyManager.start_lobby(lobby)
+
+    @staticmethod
+    async def remove_player_from_lobby(lobby: Lobby, player: Player) -> NoReturn:
+        """
+        Removes a player from the lobby.
+        :param lobby:
+        :param player:
+        """
+        team: Team = await TeamRepository.find_one_by_player(player)
+        if team:
+            players: List[player] = team.players
+        else:
+            players: List[player] = [player]
+
+        lobby.teams.remove(players)
+        await lobby.save()
+
+    @staticmethod
+    def get_join_violations(lobby: Lobby, players: List[Player]) -> List[str]:
+        """
+        Checks violations when joining a lobby.
+        :param lobby:
+        :param players:
+        :return:
+        """
+        violations: List[str] = []
+
+        for player in players:
+            if not player.activision_id:
+                violations.append(f'<@{player.discord_id}>, you need to set your activision ID to join this lobby.')
+
+            if lobby.region_lock:
+                if not player.region:
+                    violations.append(f'<@{player.discord_id}>, you need to set your region to join this lobby.')
+                else:
+                    if player.region != lobby.region_lock:
+                        violations.append(f'<@{player.discord_id}>, you are from a different region and cannot join '
+                                          f'this lobby.')
+
+        return violations
+
+    @staticmethod
+    async def start_lobby(lobby: Lobby) -> NoReturn:
+        """
+        Starts a lobby.
+        :param lobby:
+        """
+        pass
+
+    @staticmethod
     async def get_players(lobby: Lobby) -> List[Player]:
         """
-        Gets all players in a lobby.
+        Gets all players in a lobby (teams and solo queue.
         :param lobby:
         :return:
         """
         teams: List[Team] = await Team.filter(lobby=lobby)
-        return [team.players.flat() for team in teams]
+
+        players: List[Player] = [team.players.flat() for team in teams]
+        players.extend(lobby.solo_queue)
+
+        return players
+
+    @staticmethod
+    def get_player_count(lobby: Lobby) -> int:
+        """
+        Returns the number of players currently in the lobby.
+        :param lobby:
+        :return:
+        """
+        count = 0
+
+        for team in lobby.teams:
+            count += len(team.players)
+
+        count += len(lobby.solo_queue)
+        return count
 
     @staticmethod
     def get_maps(lobby: Lobby) -> List[str]:
@@ -83,6 +184,9 @@ class LobbyManager(object):
         :param lobby:
         :return:
         """
+        if not lobby.maps:
+            return []
+
         maps: List[str] = str(lobby.maps).split(',')
         return maps
 
@@ -115,19 +219,91 @@ class LobbyManager(object):
         return f'{flag} <@{player.discord_id}>'
 
     @staticmethod
-    async def find_lobby_by_player(player: Player) -> Lobby | None:
+    def get_players_text(lobby: Lobby) -> str:
         """
-        Finds a lobby for a player.
-        :param player:
+        Returns the text for the player list display.
+        :param lobby:
+        :return:
         """
-        pass
+        lines: List[str] = []
+
+        if len(lobby.teams) > 0:
+            lines.append('**Teams:**')
+
+            team_count: int = 1
+            for team in lobby.teams:
+                player_count: int = 1
+                lines.append(f'**Team {team_count}**')
+
+                for player in team.players:
+                    lines.append(f'{player_count}. {LobbyManager.get_player_text(player)}')
+                    player_count += 1
+
+                team_count += 1
+
+        if len(lobby.solo_queue) > 0:
+            lines.append('**Solo Queue**')
+
+            for player in lobby.solo_queue:
+                lines.append(LobbyManager.get_player_text(player))
+
+        return '\n'.join(lines)
+
+    @staticmethod
+    async def update_message(lobby: Lobby) -> NoReturn:
+        """
+        Updates the lobby message with the current state of the lobby.
+        :param lobby:
+        """
+        lobby_message: Message | None = await LobbyManager.get_lobby_message(lobby)
+
+        if lobby_message:
+            lobby_embed: Embed = await LobbyManager.get_embed(lobby)
+            await lobby_message.edit(embed=lobby_embed)
+
+    @staticmethod
+    async def end_lobby(lobby: Lobby) -> NoReturn:
+        """
+        Ends a lobby.
+        :param lobby:
+        """
+        await lobby.delete()
+
+        lobby_message: Message | None = await LobbyManager.get_lobby_message(lobby)
+
+        if lobby_message:
+            await lobby_message.delete()
+
+    @staticmethod
+    async def get_lobby_message(lobby: Lobby) -> Message | None:
+        """
+        Gets the discord message object of this lobby.
+        :param lobby:
+        :return:
+        """
+        guild: Guild | None = await BotUtil.fetch_guild(bot, lobby.guild)
+
+        if not guild:
+            return None
+
+        channel: TextChannel = await GuildUtil.fetch_channel(guild, lobby.channel)
+
+        if not channel:
+            return None
+
+        message: Message = await TextChannelUtil.fetch_message(channel, lobby.message)
+
+        if not message:
+            return None
+
+        return message
 
     @staticmethod
     async def generate_maps(count: int) -> List[str]:
         """
         Generates a list of maps.
-        :param count:
-        :return:
+        :param count: int
+        :return: List[str]
         """
         generated_maps: List[str] = []
 

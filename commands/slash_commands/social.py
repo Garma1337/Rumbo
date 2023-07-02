@@ -2,11 +2,12 @@
 
 from typing import NoReturn
 
-import discord
+from discord import ApplicationContext, SlashCommandOptionType, Message, Bot, slash_command
 
 from commands.cog_base import CogBase
 from db.models.player import Player
 from db.models.team import Team
+from utils.message import MessageUtil
 
 
 class Social(CogBase):
@@ -14,12 +15,14 @@ class Social(CogBase):
     Social commands.
     """
 
-    @discord.slash_command(name='create_team', description='Create a team with 3 other players.')
-    async def create_team(self,
-                          context: discord.ApplicationContext,
-                          player1: discord.SlashCommandOptionType.mentionable,
-                          player2: discord.SlashCommandOptionType.mentionable,
-                          player3: discord.SlashCommandOptionType.mentionable) -> NoReturn:
+    @slash_command(name='create_team', description='Create a team with 3 other players.')
+    async def create_team(
+            self,
+            context: ApplicationContext,
+            player1: SlashCommandOptionType.mentionable,
+            player2: SlashCommandOptionType.mentionable,
+            player3: SlashCommandOptionType.mentionable
+    ) -> NoReturn:
         """
         create_team command.
         :param context:
@@ -56,23 +59,12 @@ class Social(CogBase):
 
             players.append(player)
 
-        message: discord.Message = await context.channel.send(
+        message: Message = await context.channel.send(
             f'Please confirm that you want to be part of <@{mentioned_players[0].id}>\'s team.')
         await message.add_reaction('✅')
 
-        bot = discord.Bot()
-
         try:
-            def check(reaction, user):
-                """
-                Checks for reactions of a certain user.
-                :param reaction:
-                :param user:
-                :return:
-                """
-                return str(reaction.emoji) == '✅' and user in mentioned_players
-
-            await bot.wait_for('reaction_add', timeout=60, check=check)
+            await MessageUtil.wait_for_reactions(self.bot, message, mentioned_players, 60, '✅')
         except TimeoutError:
             await context.respond('Command cancelled. Players did not react in time.')
             return
@@ -83,8 +75,17 @@ class Social(CogBase):
             f'and <@{mentioned_players[3].id}> has been created successfully.'
         )
 
+    @slash_command(name='draft', description='Map drafting between 2 players.')
+    async def draft(self, context: ApplicationContext, opponent: SlashCommandOptionType.mentionable) -> NoReturn:
+        """
+        Map drafting between 2 players.
+        :param context:
+        :param opponent:
+        """
+        pass
 
-def setup(bot: discord.Bot) -> NoReturn:
+
+def setup(bot: Bot) -> NoReturn:
     """
     Sets up the cog.
     :param bot:

@@ -4,6 +4,8 @@ from typing import List, NoReturn
 
 from tortoise import Tortoise
 
+from lib.services import logger
+
 
 async def init() -> NoReturn:
     """
@@ -23,4 +25,4 @@ async def init() -> NoReturn:
 
     # Generate the schema
     await Tortoise.generate_schemas()
-    print(f'Database initiated successfully!')
+    logger.info(f'Database initiated successfully!')

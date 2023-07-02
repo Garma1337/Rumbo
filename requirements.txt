@@ -12,5 +12,5 @@ py-cord==2.4.1
 pypika-tortoise==0.1.6
 pytz==2023.3
 tortoise-orm==0.19.3
-typing_extensions==4.6.3
+typing_extensions==4.7.0
 yarl==1.9.2

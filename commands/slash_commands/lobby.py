@@ -2,27 +2,27 @@
 
 from typing import NoReturn
 
-import discord
-from discord import TextChannel
+from discord import TextChannel, ButtonStyle, Button, Interaction, ApplicationContext, Option, Bot, Embed, \
+    slash_command, Message
+from discord.ui import View, button
 
+from commands.autocomplete import AutoCompletion
 from commands.cog_base import CogBase
 from db.models.lobby import Lobby
 from db.models.player import Player
-from db.models.team import Team
 from lib.lobbymanager import LobbyManager
-from lib.teammanager import TeamManager
 from utils.guild import GuildUtil
 from utils.member import MemberUtil
 from utils.text_channel import ChannelNames
 
 
-class LobbyButtons(discord.ui.View):
+class LobbyButtons(View):
 
-    @discord.ui.button(label='Join', style=discord.ButtonStyle.blurple, emoji='✅')
-    async def join(self, button: discord.Button, interaction: discord.Interaction) -> NoReturn:
+    @button(label='Join', style=ButtonStyle.blurple, emoji='✅')
+    async def join(self, clicked_button: Button, interaction: Interaction) -> NoReturn:
         """
         Join a lobby.
-        :param button:
+        :param clicked_button:
         :param interaction:
         """
         await interaction.response.defer()
@@ -33,35 +33,31 @@ class LobbyButtons(discord.ui.View):
             message=interaction.message.id
         ).first()
 
-        lobby_channel: TextChannel = GuildUtil.find_channel(interaction.guild, ChannelNames.LobbyChannel.value)
+        if not lobby:
+            return
+
+        lobby_channel: TextChannel = GuildUtil.find_channel_by_name(interaction.guild, ChannelNames.LobbyChannel.value)
 
         if lobby.started:
             await lobby_channel.send(f'<@{interaction.user.id}>, you cannot join this lobby because it has already '
                                      f'started.')
             return
 
-        player: Player = await Player.find_or_create(str(interaction.user.id))
-        team: Team = await TeamManager.find_team_by_player(player)
+        player: Player = await Player.find_or_create(interaction.user.id)
 
-        if not team:
-            await lobby_channel.send(f'<@{interaction.user.id}>, you cannot join this lobby because you are not part '
-                                     f'of a team.')
-            return
+        await LobbyManager.add_player_to_lobby(lobby, player)
+        await LobbyManager.update_message(lobby)
 
-        lobby.teams.add(team)
-        await lobby.save()
-
-    @discord.ui.button(label='Leave', style=discord.ButtonStyle.primary, emoji='❌')
-    async def leave(self, button: discord.Button, interaction: discord.Interaction) -> NoReturn:
+    @button(label='Leave', emoji='❌')
+    async def leave(self, clicked_button: Button, interaction: Interaction) -> NoReturn:
         """
         Leave a lobby.
-        :param button:
+        :param clicked_button:
         :param interaction:
         """
         await interaction.response.defer()
 
-        player: Player = await Player.find_or_create(str(interaction.user.id))
-        team: Team = await TeamManager.find_team_by_player(player)
+        player: Player = await Player.find_or_create(interaction.user.id)
 
         lobby: Lobby = await Lobby.filter(
             guild=interaction.guild.id,
@@ -69,14 +65,21 @@ class LobbyButtons(discord.ui.View):
             message=interaction.message.id
         ).first()
 
-        lobby.teams.remove(team)
-        await lobby.save()
+        lobby_channel: TextChannel = GuildUtil.find_channel_by_name(interaction.guild, ChannelNames.LobbyChannel.value)
 
-    @discord.ui.button(label='Delete', style=discord.ButtonStyle.primary, emoji='')
-    async def delete(self, button: discord.Button, interaction: discord.Interaction) -> NoReturn:
+        if lobby.started:
+            await lobby_channel.send(f'<@{interaction.user.id}>, you cannot leave this lobby because it has already '
+                                     f'started.')
+            return
+
+        await LobbyManager.remove_player_from_lobby(lobby, player)
+        await LobbyManager.update_message(lobby)
+
+    @button(label='Delete', emoji='🗑️')
+    async def delete(self, clicked_button: Button, interaction: Interaction) -> NoReturn:
         """
         Delete a lobby.
-        :param button:
+        :param clicked_button:
         :param interaction:
         """
         await interaction.response.defer()
@@ -88,14 +91,12 @@ class LobbyButtons(discord.ui.View):
         ).first()
 
         if not lobby.started and interaction.user.id == lobby.creator.discord_id:
-            await lobby.delete()
-            await interaction.message.delete()
+            await LobbyManager.end_lobby(lobby)
             return
 
         is_team: bool = MemberUtil.is_team(interaction.user)
         if lobby.started and is_team:
-            await lobby.delete()
-            await interaction.message.delete()
+            await LobbyManager.end_lobby(lobby)
             return
 
 
@@ -104,44 +105,58 @@ class LobbyCog(CogBase):
     Lobby commands cog.
     """
 
-    @discord.slash_command(name='lobby', description='Create a new lobby.')
-    async def lobby(self, context: discord.ApplicationContext) -> NoReturn:
+    @slash_command(name='lobby', description='Create a new lobby.')
+    async def lobby(
+            self,
+            context: ApplicationContext,
+            insta: Option(bool, required=False, default=False),
+            region_lock: Option(required=False, default=None, choices=AutoCompletion.get_regions())
+    ) -> NoReturn:
         """
-        lobby command.
+        Lobby command.
         :param context:
+        :param insta:
+        :param region_lock:
         """
         await context.defer()
 
-        matches_channel: TextChannel = GuildUtil.find_channel(context.guild, ChannelNames.MatchesChannel.value)
-        message: discord.Message = await matches_channel.send('...')
+        CogBase.log_command_usage('lobby', context.user, [insta, region_lock])
 
-        creator: Player = await Player.find_or_create(str(context.user.id))
+        matches_channel: TextChannel = GuildUtil.find_channel_by_name(context.guild, ChannelNames.MatchesChannel.value)
+        message: Message = await matches_channel.send('...')
+
+        creator: Player = await Player.find_or_create(context.user.id)
 
         lobby: Lobby = await Lobby.create(
             creator=creator,
             tracks='',
             guild=context.guild.id,
-            channel=context.channel.id,
+            channel=matches_channel.id,
             message=message.id,
-            started=0
+            started=0,
+            insta=insta,
+            region_lock=region_lock
         )
 
-        embed: discord.Embed = await LobbyManager.get_embed(lobby)
+        embed: Embed = await LobbyManager.get_embed(lobby)
         await message.edit(content=None, embed=embed, view=LobbyButtons())
 
         await context.respond('Your lobby was successfully created.')
 
-    @discord.slash_command(name='end_lobby', description='End your lobby.')
-    async def end_lobby(self, context: discord.ApplicationContext) -> NoReturn:
+    @slash_command(name='end_lobby', description='End your lobby.')
+    async def end_lobby(self, context: ApplicationContext) -> NoReturn:
         """
         end_lobby command.
         :param context:
         """
         await context.defer()
+
+        CogBase.log_command_usage('end_lobby', context.user)
+
         await context.respond('Not implemented yet.')
 
 
-def setup(bot: discord.Bot) -> NoReturn:
+def setup(bot: Bot) -> NoReturn:
     """
     Sets up the cog.
     :param bot:

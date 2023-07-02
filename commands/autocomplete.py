@@ -1,7 +1,8 @@
 # coding: utf-8
+
 from typing import List
 
-import discord
+from discord import AutocompleteContext, ActivityType
 
 from lib.db import DbUtil
 
@@ -10,6 +11,18 @@ class AutoCompletion(object):
     """
     Autocomplete helpers.
     """
+
+    @staticmethod
+    def get_activity_types() -> List[str]:
+        """
+        Returns an array of activities.
+        :return:
+        """
+        return [
+            ActivityType.playing.name,
+            ActivityType.listening.name,
+            ActivityType.watching.name
+        ]
 
     @staticmethod
     def get_nat_types() -> List[str]:
@@ -39,7 +52,7 @@ class AutoCompletion(object):
         return [console['name'] for console in consoles]
 
     @staticmethod
-    async def get_flags(context: discord.AutocompleteContext) -> List[str]:
+    async def get_flags(context: AutocompleteContext) -> List[str]:
         """
         Returns an array of all flags to use for autocompletion. To use this, the region needs to be selectable in the slash command as well.
         :param context:
@@ -54,4 +67,4 @@ class AutoCompletion(object):
             return []
 
         region = list(filtered_regions)[0]
-        return region['countries']
+        return list(region['countries'])

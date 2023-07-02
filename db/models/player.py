@@ -17,7 +17,7 @@ class Player(Model):
     modified_at = fields.DatetimeField(auto_now=True)
 
     @staticmethod
-    async def find_or_create(discord_id: str):
+    async def find_or_create(discord_id: int):
         """
         Finds a player based on the discord id and creates a new record if it doesn't already exist. Will always
         return a player object.

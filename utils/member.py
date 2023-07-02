@@ -1,8 +1,12 @@
 # coding: utf-8
 
 from enum import Enum
+from typing import List, NoReturn
 
 import discord
+from discord import DMChannel
+
+from lib.logger import Logger
 
 
 class RoleNames(Enum):
@@ -37,4 +41,26 @@ class MemberUtil(object):
         :param member:
         :return:
         """
-        return MemberUtil.has_role(member, RoleNames.AdminRole.value) or MemberUtil.has_role(member, RoleNames.TeamRole.value)
+        team_roles: List[str] = [RoleNames.AdminRole.value, RoleNames.TeamRole.value]
+
+        for team_role in team_roles:
+            if MemberUtil.has_role(member, team_role):
+                return True
+
+        return False
+
+    @staticmethod
+    async def send_dm(member: discord.Member, message: str) -> NoReturn:
+        """
+        Sends a DM to a user. If no DM channel exists, one will be created.
+        :param member:
+        :param message:
+        """
+        dm_channel: DMChannel | None = member.dm_channel
+        if not dm_channel:
+            logger: Logger = Logger()
+            logger.info(f'Creating new DM channel for user {member.id}')
+
+            dm_channel: DMChannel = await member.create_dm()
+
+        await dm_channel.send(message)

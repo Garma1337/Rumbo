@@ -24,7 +24,9 @@ class Config(object):
             owner: str,
             guild: str,
             bot_secret: str,
-            default_embed_color: int
+            default_embed_color: int,
+            log_level: int,
+            welcome_dm: str | None
     ):
         self.bot_user_id = bot_user_id
         self.enable_debug = enable_debug
@@ -32,6 +34,8 @@ class Config(object):
         self.guild = guild
         self.bot_secret = bot_secret
         self.default_embed_color = default_embed_color
+        self.log_level = log_level
+        self.welcome_dm = welcome_dm
 
     @staticmethod
     def from_file():
@@ -49,5 +53,7 @@ class Config(object):
             settings['owner'],
             settings['guild'],
             settings['bot_secret'],
-            int(settings['default_embed_color'])
+            int(settings['default_embed_color']),
+            int(settings['log_level']),
+            settings['welcome_dm']
         )

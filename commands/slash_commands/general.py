@@ -2,31 +2,31 @@
 
 from typing import List, NoReturn
 
-import discord
+from discord import ApplicationContext, Embed, Bot, slash_command, default_permissions
 
-from bot import bot_started
+from _started import bot_started
 from commands.cog_base import CogBase
 from lib.carbon import Carbon
-from lib.config import Config
+from lib.services import config
 from utils.text_channel import TextChannelUtil
 
 
-class Maintenance(CogBase):
+class General(CogBase):
     """
-    Maintenance commands.
+    General commands.
     """
 
-    @discord.slash_command(name='ping', description='Ping the bot.')
-    async def ping(self, context: discord.ApplicationContext) -> NoReturn:
+    @slash_command(name='ping', description='Ping the bot.')
+    async def ping(self, context: ApplicationContext) -> NoReturn:
         """
         Ping command.
         :param context:
         """
         await context.defer()
 
-        config: Config = Config.from_file()
+        CogBase.log_command_usage('ping', context.user)
 
-        ping_embed = discord.Embed(
+        ping_embed: Embed = Embed(
             colour=config.default_embed_color
         )
 
@@ -43,9 +43,9 @@ class Maintenance(CogBase):
 
         await context.respond('Success!', embed=ping_embed)
 
-    @discord.slash_command(name='test', description='Test stuff.')
-    @discord.default_permissions(administrator=True)
-    async def test(self, context: discord.ApplicationContext) -> NoReturn:
+    @slash_command(name='test', description='Test stuff.')
+    @default_permissions(administrator=True)
+    async def test(self, context: ApplicationContext) -> NoReturn:
         """
         test commands.
         :param context:
@@ -60,9 +60,9 @@ class Maintenance(CogBase):
         await TextChannelUtil.send_error(context.channel, 'testing alert')
 
 
-def setup(bot: discord.Bot) -> NoReturn:
+def setup(bot: Bot) -> NoReturn:
     """
     Sets up the cog.
     :param bot:
     """
-    bot.add_cog(Maintenance(bot))
+    bot.add_cog(General(bot))

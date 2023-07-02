@@ -1,7 +1,9 @@
 # coding: utf-8
+
 from typing import NoReturn
 
-import discord
+from discord import ApplicationContext, SlashCommandOptionType, Embed, Option, Bot, slash_command
+from discord.utils import basic_autocomplete
 
 from commands.autocomplete import AutoCompletion
 from commands.cog_base import CogBase
@@ -14,8 +16,8 @@ class Profile(CogBase):
     Profile commands cog.
     """
 
-    @discord.slash_command(name='profile', description='Show your profile.')
-    async def show(self, context: discord.ApplicationContext, user: discord.SlashCommandOptionType.mentionable = None) -> NoReturn:
+    @slash_command(name='profile', description='Show your profile.')
+    async def show(self, context: ApplicationContext, user: SlashCommandOptionType.mentionable = None) -> NoReturn:
         """
         Profile command.
         :param user:
@@ -28,7 +30,7 @@ class Profile(CogBase):
         else:
             user_id = user.id
 
-        player: Player = await Player.find_or_create(str(user_id))
+        player: Player = await Player.find_or_create(user_id)
         profile: PlayerProfile = await PlayerManager.get_profile(player)
 
         if context.user.avatar:
@@ -36,17 +38,17 @@ class Profile(CogBase):
         else:
             avatar_url = context.user.default_avatar.url
 
-        embed: discord.Embed = profile.get_embed(
+        profile_embed: Embed = profile.get_embed(
             context.user.display_name,
             context.user.joined_at,
             context.user.bot,
             avatar_url
         )
 
-        await context.respond(embed=embed)
+        await context.respond(embed=profile_embed)
 
-    @discord.slash_command(name='set_activision_id', description='Set your activision ID.')
-    async def set_activision_id(self, context: discord.ApplicationContext, activision_id: discord.Option()) -> NoReturn:
+    @slash_command(name='set_activision_id', description='Set your activision ID.')
+    async def set_activision_id(self, context: ApplicationContext, activision_id: Option()) -> NoReturn:
         """
         set_activision_id command.
         :param context:
@@ -54,17 +56,18 @@ class Profile(CogBase):
         """
         await context.defer()
 
-        player: Player = await Player.find_or_create(str(context.user.id))
+        player: Player = await Player.find_or_create(context.user.id)
         await PlayerManager.set_activision_id(player, activision_id)
 
         await context.respond(f'Your activision ID has been set to {activision_id}.')
 
-    @discord.slash_command(name='set_flag', description='Set your country flag.')
+    @slash_command(name='set_flag', description='Set your country flag.')
     async def set_flag(
             self,
-            context: discord.ApplicationContext,
-            region: discord.Option(choices=AutoCompletion.get_regions()),
-            flag: discord.Option(autocomplete=discord.utils.basic_autocomplete(AutoCompletion.get_flags))) -> NoReturn:
+            context: ApplicationContext,
+            region: Option(choices=AutoCompletion.get_regions()),
+            flag: Option(autocomplete=basic_autocomplete(AutoCompletion.get_flags))
+    ) -> NoReturn:
         """
         set_flag command.
         :param context:
@@ -74,7 +77,7 @@ class Profile(CogBase):
         """
         await context.defer()
 
-        player: Player = await Player.find_or_create(str(context.user.id))
+        player: Player = await Player.find_or_create(context.user.id)
 
         try:
             await PlayerManager.set_flag(player, flag)
@@ -83,11 +86,12 @@ class Profile(CogBase):
             await context.respond(e)
             return
 
-    @discord.slash_command(name='set_nat_type', description='Set your NAT type.')
+    @slash_command(name='set_nat_type', description='Set your NAT type.')
     async def set_nat_type(
             self,
-            context: discord.ApplicationContext,
-            nat_type: discord.Option(choices=AutoCompletion.get_nat_types())) -> NoReturn:
+            context: ApplicationContext,
+            nat_type: Option(choices=AutoCompletion.get_nat_types())
+    ) -> NoReturn:
         """
         set_nat_type command.
         :param context:
@@ -96,7 +100,7 @@ class Profile(CogBase):
         """
         await context.defer()
 
-        player: Player = await Player.find_or_create(str(context.user.id))
+        player: Player = await Player.find_or_create(context.user.id)
 
         try:
             await PlayerManager.set_nat_type(player, nat_type)
@@ -105,11 +109,12 @@ class Profile(CogBase):
             await context.respond(e)
             return
 
-    @discord.slash_command(name='set_console', description='Set your console.')
+    @slash_command(name='set_console', description='Set your console.')
     async def set_console(
             self,
-            context: discord.ApplicationContext,
-            console: discord.Option(choices=AutoCompletion.get_consoles())) -> NoReturn:
+            context: ApplicationContext,
+            console: Option(choices=AutoCompletion.get_consoles())
+    ) -> NoReturn:
         """
         set_console command.
         :param context:
@@ -118,7 +123,7 @@ class Profile(CogBase):
         """
         await context.defer()
 
-        player: Player = await Player.find_or_create(str(context.user.id))
+        player: Player = await Player.find_or_create(context.user.id)
 
         try:
             await PlayerManager.set_console(player, console)
@@ -128,7 +133,7 @@ class Profile(CogBase):
             return
 
 
-def setup(bot: discord.Bot) -> NoReturn:
+def setup(bot: Bot) -> NoReturn:
     """
     Sets up the cog.
     :param bot:

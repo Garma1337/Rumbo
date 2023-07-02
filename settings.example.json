@@ -4,5 +4,7 @@
   "owner": "",
   "guild": "",
   "bot_secret": "",
-  "default_embed_color": 0
+  "default_embed_color": 0,
+  "log_level": 10,
+  "welcome_dm": null
 }
