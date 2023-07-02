@@ -6,7 +6,7 @@ from typing import List, NoReturn
 import discord
 from discord import DMChannel
 
-from lib.logger import Logger
+from lib.services import logger
 
 
 class RoleNames(Enum):
@@ -58,9 +58,7 @@ class MemberUtil(object):
         """
         dm_channel: DMChannel | None = member.dm_channel
         if not dm_channel:
-            logger: Logger = Logger()
             logger.info(f'Creating new DM channel for user {member.id}')
-
             dm_channel: DMChannel = await member.create_dm()
 
         await dm_channel.send(message)

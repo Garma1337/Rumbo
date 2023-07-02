@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from discord import Guild, Bot, Forbidden, HTTPException, Intents
+from discord import Guild, Bot, Forbidden, HTTPException
 
 
 class BotUtil(object):

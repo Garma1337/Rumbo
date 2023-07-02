@@ -5,9 +5,7 @@ from enum import Enum
 import discord
 from discord import TextChannel, Message, NotFound, Forbidden, HTTPException
 
-from lib.config import Config
-
-config: Config = Config.from_file()
+from lib.services import config
 
 
 class ChannelNames(Enum):
