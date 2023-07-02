@@ -33,6 +33,8 @@ class Social(CogBase):
         """
         await context.defer()
 
+        CogBase.log_command_usage('set_team', context.user, [player1.id, player2.id, player3.id])
+
         mentioned_players = [context.user, player1, player2, player3]
 
         unique_players = {}
@@ -46,6 +48,11 @@ class Social(CogBase):
         own_mentions = list(filter(lambda m: m.id == context.user.id, mentioned_players))
         if len(own_mentions) > 1:
             await context.respond('You cannot team up with yourself.')
+            return
+
+        bot_mentions = list(filter(lambda m: m.bot, mentioned_players))
+        if len(bot_mentions) > 0:
+            await context.respond('You cannot team up with a bot.')
             return
 
         players = []
@@ -82,7 +89,9 @@ class Social(CogBase):
         :param context:
         :param opponent:
         """
-        pass
+        await context.defer()
+
+        CogBase.log_command_usage('draft', context.user, [opponent.id])
 
 
 def setup(bot: Bot) -> NoReturn:

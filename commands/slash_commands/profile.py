@@ -25,6 +25,8 @@ class Profile(CogBase):
         """
         await context.defer()
 
+        CogBase.log_command_usage('profile', context.user, [user.id])
+
         if not user:
             user_id = context.user.id
         else:
@@ -56,6 +58,8 @@ class Profile(CogBase):
         """
         await context.defer()
 
+        CogBase.log_command_usage('set_activision_id', context.user, [activision_id])
+
         player: Player = await Player.find_or_create(context.user.id)
         await PlayerManager.set_activision_id(player, activision_id)
 
@@ -76,6 +80,8 @@ class Profile(CogBase):
         :return:
         """
         await context.defer()
+
+        CogBase.log_command_usage('set_flag', context.user, [region, flag])
 
         player: Player = await Player.find_or_create(context.user.id)
 
@@ -100,6 +106,8 @@ class Profile(CogBase):
         """
         await context.defer()
 
+        CogBase.log_command_usage('set_nat_type', context.user, [nat_type])
+
         player: Player = await Player.find_or_create(context.user.id)
 
         try:
@@ -122,6 +130,8 @@ class Profile(CogBase):
         :return:
         """
         await context.defer()
+
+        CogBase.log_command_usage('set_console', context.user, [console])
 
         player: Player = await Player.find_or_create(context.user.id)
 
