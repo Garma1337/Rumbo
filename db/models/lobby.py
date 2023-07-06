@@ -13,6 +13,7 @@ class Lobby(Model):
     started = fields.SmallIntField()
     insta = fields.SmallIntField()
     max_players = fields.IntField(default=8)
+    map_count = fields.IntField(default=5)
     solo_queue = fields.ManyToManyField('models.Player', related_name='lobby')
     teams = fields.ManyToManyField('models.Team', related_name='lobby')
     region_lock = fields.CharField(max_length=30, null=True)

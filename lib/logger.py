@@ -9,12 +9,9 @@ from lib.filesystem import FileSystem
 
 
 class Logger(object):
-    """
-    Simple file logger.
-    """
 
     def __init__(self, config: Config):
-        current_directory: str = FileSystem.get_directory(__file__)
+        current_directory: str = FileSystem.get_directory_path(__file__)
         log_file_path: str = os.path.join(current_directory, '..', 'bot.log')
 
         self.logger = logging.getLogger('Default')
@@ -34,36 +31,16 @@ class Logger(object):
         self.logger.addHandler(stream_handler)
 
     def debug(self, message: str) -> NoReturn:
-        """
-        Logs a debug message.
-        :param message:
-        """
         self.logger.debug(message)
 
     def info(self, message: str) -> NoReturn:
-        """
-        Logs an info message.
-        :param message:
-        """
         self.logger.info(message)
 
     def warning(self, message: str) -> NoReturn:
-        """
-        Logs a warning message.
-        :param message:
-        """
         self.logger.warning(message)
 
     def error(self, message: str) -> NoReturn:
-        """
-        Logs an error message.
-        :param message:
-        """
         self.logger.error(message)
 
     def critical(self, message: str) -> NoReturn:
-        """
-        Logs a critical message.
-        :param message:
-        """
         self.logger.critical(message)

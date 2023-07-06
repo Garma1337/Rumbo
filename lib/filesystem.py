@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+from typing import List
 
 
 class FileSystemException(Exception):
@@ -11,17 +12,9 @@ class FileSystemException(Exception):
 
 
 class FileSystem(object):
-    """
-    Various filesystem operation utilities.
-    """
 
     @staticmethod
     def read_file(file_path: str) -> str:
-        """
-        Reads content from a file and returns it as string.
-        :param file_path:
-        :return:
-        """
         if not os.path.exists(file_path):
             raise FileSystemException('File "{}" does not exist'.format(file_path))
 
@@ -29,10 +22,13 @@ class FileSystem(object):
             return file.read()
 
     @staticmethod
-    def get_directory(file: str) -> str:
-        """
-        Returns the absolute path to a directory.
-        :param file:
-        :return:
-        """
+    def get_directory_path(file: str) -> str:
         return os.path.dirname(os.path.realpath(file))
+
+    @staticmethod
+    def get_files_in_directory(path: str) -> List[str]:
+        return [file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file))]
+
+    @staticmethod
+    def get_directories_in_directory(path: str) -> List[str]:
+        return [file for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))]

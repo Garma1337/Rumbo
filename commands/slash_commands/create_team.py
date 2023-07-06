@@ -2,18 +2,15 @@
 
 from typing import NoReturn
 
-from discord import ApplicationContext, SlashCommandOptionType, Message, Bot, slash_command
+from discord import ApplicationContext, SlashCommandOptionType, Message, slash_command, Cog, Bot
 
-from commands.cog_base import CogBase
 from db.models.player import Player
 from db.models.team import Team
+from lib.services import bot
 from utils.message import MessageUtil
 
 
-class Social(CogBase):
-    """
-    Social commands.
-    """
+class CreateTeamCommand(Cog):
 
     @slash_command(name='create_team', description='Create a team with 3 other players.')
     async def create_team(
@@ -23,17 +20,7 @@ class Social(CogBase):
             player2: SlashCommandOptionType.mentionable,
             player3: SlashCommandOptionType.mentionable
     ) -> NoReturn:
-        """
-        create_team command.
-        :param context:
-        :param player1:
-        :param player2:
-        :param player3:
-        :return:
-        """
         await context.defer()
-
-        CogBase.log_command_usage('set_team', context.user, [player1.id, player2.id, player3.id])
 
         mentioned_players = [context.user, player1, player2, player3]
 
@@ -71,7 +58,7 @@ class Social(CogBase):
         await message.add_reaction('✅')
 
         try:
-            await MessageUtil.wait_for_reactions(self.bot, message, mentioned_players, 60, '✅')
+            await MessageUtil.wait_for_reactions(bot, message, mentioned_players, 60, '✅')
         except TimeoutError:
             await context.respond('Command cancelled. Players did not react in time.')
             return
@@ -82,21 +69,9 @@ class Social(CogBase):
             f'and <@{mentioned_players[3].id}> has been created successfully.'
         )
 
-    @slash_command(name='draft', description='Map drafting between 2 players.')
-    async def draft(self, context: ApplicationContext, opponent: SlashCommandOptionType.mentionable) -> NoReturn:
-        """
-        Map drafting between 2 players.
-        :param context:
-        :param opponent:
-        """
-        await context.defer()
 
-        CogBase.log_command_usage('draft', context.user, [opponent.id])
-
-
-def setup(bot: Bot) -> NoReturn:
+def setup(bot: Bot):
     """
-    Sets up the cog.
-    :param bot:
+    Cog setup.
     """
-    bot.add_cog(Social(bot))
+    bot.add_cog(CreateTeamCommand())

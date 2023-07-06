@@ -18,17 +18,9 @@ from utils.text_channel import TextChannelUtil, ChannelNames
 
 
 class LobbyManager(object):
-    """
-    Lobby manager.
-    """
 
     @staticmethod
     async def get_embed(lobby: Lobby) -> Embed:
-        """
-        Returns the embed for the lobby.
-        :param lobby:
-        :return:
-        """
         icon: str = 'https://i.imgur.com/dQFJiy3.png'
         players: List[Player] = await LobbyManager.get_players(lobby)
         maps: List[str] = LobbyManager.get_maps(lobby)
@@ -73,11 +65,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def add_player_to_lobby(lobby: Lobby, player: Player) -> NoReturn:
-        """
-        Adds a player to a lobby.
-        :param lobby:
-        :param player:
-        """
         team: Team = await TeamRepository.find_one_by_player(player)
         if team:
             players: List[player] = team.players
@@ -102,11 +89,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def remove_player_from_lobby(lobby: Lobby, player: Player) -> NoReturn:
-        """
-        Removes a player from the lobby.
-        :param lobby:
-        :param player:
-        """
         team: Team = await TeamRepository.find_one_by_player(player)
         if team:
             players: List[player] = team.players
@@ -118,12 +100,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_join_violations(lobby: Lobby, players: List[Player]) -> List[str]:
-        """
-        Checks violations when joining a lobby.
-        :param lobby:
-        :param players:
-        :return:
-        """
         violations: List[str] = []
 
         for player in players:
@@ -142,19 +118,10 @@ class LobbyManager(object):
 
     @staticmethod
     async def start_lobby(lobby: Lobby) -> NoReturn:
-        """
-        Starts a lobby.
-        :param lobby:
-        """
         pass
 
     @staticmethod
     async def get_players(lobby: Lobby) -> List[Player]:
-        """
-        Gets all players in a lobby (teams and solo queue.
-        :param lobby:
-        :return:
-        """
         teams: List[Team] = await Team.filter(lobby=lobby)
 
         players: List[Player] = [team.players.flat() for team in teams]
@@ -164,11 +131,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_player_count(lobby: Lobby) -> int:
-        """
-        Returns the number of players currently in the lobby.
-        :param lobby:
-        :return:
-        """
         count = 0
 
         for team in lobby.teams:
@@ -179,11 +141,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_maps(lobby: Lobby) -> List[str]:
-        """
-        Returns the maps for a lobby.
-        :param lobby:
-        :return:
-        """
         if not lobby.maps:
             return []
 
@@ -192,11 +149,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_title(lobby: Lobby) -> str:
-        """
-        Returns the title of a lobby.
-        :param lobby:
-        :return:
-        """
         if not lobby.started:
             state = 'Gathering'
         else:
@@ -206,11 +158,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_player_text(player: Player) -> str:
-        """
-        Returns the full display name of a player.
-        :param player:
-        :return:
-        """
         if not player.flag:
             flag = ':united_nations:'
         else:
@@ -220,11 +167,6 @@ class LobbyManager(object):
 
     @staticmethod
     def get_players_text(lobby: Lobby) -> str:
-        """
-        Returns the text for the player list display.
-        :param lobby:
-        :return:
-        """
         lines: List[str] = []
 
         if len(lobby.teams) > 0:
@@ -251,10 +193,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def update_message(lobby: Lobby) -> NoReturn:
-        """
-        Updates the lobby message with the current state of the lobby.
-        :param lobby:
-        """
         lobby_message: Message | None = await LobbyManager.get_lobby_message(lobby)
 
         if lobby_message:
@@ -263,10 +201,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def end_lobby(lobby: Lobby) -> NoReturn:
-        """
-        Ends a lobby.
-        :param lobby:
-        """
         await lobby.delete()
 
         lobby_message: Message | None = await LobbyManager.get_lobby_message(lobby)
@@ -276,11 +210,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def get_lobby_message(lobby: Lobby) -> Message | None:
-        """
-        Gets the discord message object of this lobby.
-        :param lobby:
-        :return:
-        """
         guild: Guild | None = await BotUtil.fetch_guild(bot, lobby.guild)
 
         if not guild:
@@ -300,11 +229,6 @@ class LobbyManager(object):
 
     @staticmethod
     async def generate_maps(count: int) -> List[str]:
-        """
-        Generates a list of maps.
-        :param count: int
-        :return: List[str]
-        """
         generated_maps: List[str] = []
 
         maps = DbUtil.get_maps()

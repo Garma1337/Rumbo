@@ -8,10 +8,6 @@ from lib.services import logger
 
 
 async def init() -> NoReturn:
-    """
-    Initialises the database.
-    """
-
     models: List[str] = [
         'db.models.player',
         'db.models.team',

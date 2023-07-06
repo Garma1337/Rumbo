@@ -2,7 +2,4 @@
 
 
 class TeamManager(object):
-    """
-    Class to manage teams.
-    """
-
+    pass

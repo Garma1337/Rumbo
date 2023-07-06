@@ -7,16 +7,11 @@ from lib.filesystem import FileSystem
 
 
 class ConfigException(Exception):
-    """
-    Custom exception for everything related to the configuration.
-    """
     pass
 
 
 class Config(object):
-    """
-    Global bot configuration.
-    """
+
     def __init__(
             self,
             bot_user_id: str,
@@ -39,11 +34,7 @@ class Config(object):
 
     @staticmethod
     def from_file():
-        """
-        Creates a new configuration object from the config file.
-        :return:
-        """
-        config_file_path = os.path.join(FileSystem.get_directory(__file__), '..', 'settings.json')
+        config_file_path = os.path.join(FileSystem.get_directory_path(__file__), '..', 'settings.json')
         content: str = FileSystem.read_file(config_file_path)
         settings: dict[str, str] = json.loads(content)
 

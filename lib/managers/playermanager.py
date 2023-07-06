@@ -12,9 +12,6 @@ from lib.db import DbUtil
 
 
 class PlayerProfile(object):
-    """
-    Player profiles.
-    """
 
     def __init__(self, discord_id, activision_id, nat_type, country, region, console, favorite_character, favorite_map):
         self.discord_id = discord_id
@@ -27,14 +24,6 @@ class PlayerProfile(object):
         self.favorite_map = favorite_map
 
     def get_embed(self, display_name: str, joined_at: datetime, is_bot: bool, avatar_url: str) -> discord.Embed:
-        """
-        Returns the embed to render a player profile.
-        :param display_name:
-        :param joined_at:
-        :param is_bot:
-        :param avatar_url:
-        :return:
-        """
         profile_fields: List[str] = [
             f'**Activision ID**: {self.activision_id}',
             f'**NAT Type**: {self.nat_type}',
@@ -69,27 +58,14 @@ class PlayerProfile(object):
 
 
 class PlayerManager(object):
-    """
-    Class to manage players.
-    """
 
     @staticmethod
     async def set_activision_id(player: Player, activision_id: str) -> NoReturn:
-        """
-        Set's a player's activision ID.
-        :param player:
-        :param activision_id:
-        """
         player.activision_id = activision_id
         await player.save()
 
     @staticmethod
     async def set_flag(player: Player, flag: str) -> NoReturn:
-        """
-        Sets a player's flag.
-        :param player:
-        :param flag:
-        """
         regions = DbUtil.get_regions()
         filtered_regions = filter(lambda r: flag in r['countries'], regions)
 
@@ -105,11 +81,6 @@ class PlayerManager(object):
 
     @staticmethod
     async def set_nat_type(player: Player, nat_type: str) -> NoReturn:
-        """
-        Sets a player's NAT type.
-        :param player:
-        :param nat_type:
-        """
         nat_types = DbUtil.get_nat_types()
         filtered_nat_types = filter(lambda n: n['name'] == nat_type, nat_types)
 
@@ -123,11 +94,6 @@ class PlayerManager(object):
 
     @staticmethod
     async def set_console(player: Player, console: str) -> NoReturn:
-        """
-        Sets a player's console.
-        :param player:
-        :param console:
-        """
         consoles = DbUtil.get_consoles()
         filtered_consoles = filter(lambda c: c['name'] == console, consoles)
 
@@ -141,11 +107,6 @@ class PlayerManager(object):
 
     @staticmethod
     async def get_profile(player: Player) -> PlayerProfile:
-        """
-        Returns data for a player's profile.
-        :param player:
-        :return:
-        """
         nat_type = DbUtil.find_nat_type_by_key(player.nat)
         region = DbUtil.find_region_by_key(player.region)
         console = DbUtil.find_console_by_key(player.console)

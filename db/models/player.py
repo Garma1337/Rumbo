@@ -18,12 +18,6 @@ class Player(Model):
 
     @staticmethod
     async def find_or_create(discord_id: int):
-        """
-        Finds a player based on the discord id and creates a new record if it doesn't already exist. Will always
-        return a player object.
-        :param discord_id:
-        :return:
-        """
         player: Player = await Player.filter(discord_id=discord_id).first()
 
         if not player:
