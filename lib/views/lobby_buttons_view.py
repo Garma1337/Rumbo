@@ -2,13 +2,13 @@
 
 from typing import NoReturn
 
+import discord.utils
 from discord import TextChannel, ButtonStyle, Button, Interaction
 from discord.ui import View, button
 
 from db.models.lobby import Lobby
 from db.models.player import Player
 from lib.managers.lobbymanager import LobbyManager
-from utils.guild import GuildUtil
 from utils.member import MemberUtil
 from utils.text_channel import ChannelNames
 
@@ -31,7 +31,10 @@ class LobbyButtonsView(View):
         if not lobby:
             return
 
-        lobby_channel: TextChannel = GuildUtil.find_channel_by_name(interaction.guild, ChannelNames.LobbyChannel.value)
+        lobby_channel: TextChannel | None = discord.utils.get(
+            interaction.guild.channels,
+            name=ChannelNames.LobbyChannel.value
+        )
 
         if lobby.started:
             await lobby_channel.send(f'<@{interaction.user.id}>, you cannot join this lobby because it has already '
@@ -55,7 +58,10 @@ class LobbyButtonsView(View):
             message=interaction.message.id
         ).first()
 
-        lobby_channel: TextChannel = GuildUtil.find_channel_by_name(interaction.guild, ChannelNames.LobbyChannel.value)
+        lobby_channel: TextChannel | None = discord.utils.get(
+            interaction.guild.channels,
+            name=ChannelNames.LobbyChannel.value
+        )
 
         if lobby.started:
             await lobby_channel.send(f'<@{interaction.user.id}>, you cannot leave this lobby because it has already '

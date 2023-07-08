@@ -4,6 +4,7 @@ from typing import NoReturn
 
 from discord import ApplicationContext, slash_command, default_permissions, Cog, Bot
 
+from db.models.team import Team
 from utils.text_channel import TextChannelUtil
 
 

@@ -38,7 +38,4 @@ class ProfileCommand(Cog):
 
 
 def setup(bot: Bot):
-    """
-    Cog setup.
-    """
     bot.add_cog(ProfileCommand())

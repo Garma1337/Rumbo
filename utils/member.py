@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, NoReturn
 
 import discord
-from discord import DMChannel
+from discord import DMChannel, Role
 
 from lib.services import logger
 
@@ -12,21 +12,23 @@ from lib.services import logger
 class RoleNames(Enum):
     AdminRole = 'Admin'
     TeamRole = 'Team'
+    MutedRole = 'Muted'
+    LiveRole = 'Live'
 
 
 class MemberUtil(object):
-
-    @staticmethod
-    def has_role(member: discord.Member, role_name: str) -> bool:
-        roles = list(filter(lambda r: r.name == role_name, member.roles))
-        return len(roles) > 0
 
     @staticmethod
     def is_team(member: discord.Member) -> bool:
         team_roles: List[str] = [RoleNames.AdminRole.value, RoleNames.TeamRole.value]
 
         for team_role in team_roles:
-            if MemberUtil.has_role(member, team_role):
+            role: Role | None = discord.utils.get(member.guild.roles, name=team_role)
+
+            if not role:
+                continue
+
+            if member.get_role(role.id):
                 return True
 
         return False

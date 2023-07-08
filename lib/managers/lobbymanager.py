@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from typing import List, NoReturn
 
+import discord.utils
 from discord import Embed, Guild, TextChannel, Message
 
 from db.models.lobby import Lobby
@@ -74,8 +75,8 @@ class LobbyManager(object):
         violations: List[str] = LobbyManager.get_join_violations(lobby, players)
 
         if len(violations) > 0:
-            guild: Guild | None = await BotUtil.fetch_guild(bot, lobby.guild)
-            lobby_channel: TextChannel | None = GuildUtil.find_channel_by_name(guild, ChannelNames.LobbyChannel.value)
+            guild: Guild | None = await BotUtil.fetch_guild(lobby.guild)
+            lobby_channel: TextChannel | None = discord.utils.get(guild.channels, name=ChannelNames.LobbyChannel.value)
 
             content: str = '\n'.join(violations)
             await lobby_channel.send(content)

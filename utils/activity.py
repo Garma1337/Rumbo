@@ -6,7 +6,7 @@ import discord
 class ActivityUtil(object):
 
     @staticmethod
-    def is_crash_team_rumble_stream(activity: discord.BaseActivity) -> bool:
+    def is_ctr_stream(activity: discord.BaseActivity) -> bool:
         if not isinstance(activity, discord.Streaming):
             return False
 

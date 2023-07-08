@@ -10,6 +10,7 @@ from utils.member import MemberUtil
 
 
 class DmCommand(Cog):
+
     @slash_command(name='dm', description='DM a user as Rumbo.')
     @default_permissions(manage_channels=True)
     @default_permissions(manage_messages=True)
@@ -24,7 +25,4 @@ class DmCommand(Cog):
 
 
 def setup(bot: Bot):
-    """
-    Cog setup.
-    """
     bot.add_cog(DmCommand())

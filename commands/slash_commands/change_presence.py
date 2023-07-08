@@ -9,6 +9,7 @@ from lib.services import bot
 
 
 class ChangePresenceCommand(Cog):
+
     @slash_command(name='change_presence', description='Change Rumbo\'s presence.')
     @default_permissions(manage_channels=True)
     @default_permissions(manage_messages=True)

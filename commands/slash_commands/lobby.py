@@ -2,6 +2,7 @@
 
 from typing import NoReturn
 
+import discord.utils
 from discord import TextChannel, ApplicationContext, Option, Embed, slash_command, Message, Cog, Bot
 
 from commands.autocomplete import AutoCompletion
@@ -9,7 +10,6 @@ from db.models.lobby import Lobby
 from db.models.player import Player
 from lib.managers.lobbymanager import LobbyManager
 from lib.views.lobby_buttons_view import LobbyButtonsView
-from utils.guild import GuildUtil
 from utils.text_channel import ChannelNames
 
 
@@ -24,9 +24,16 @@ class LobbyCommand(Cog):
     ) -> NoReturn:
         await context.defer()
 
-        matches_channel: TextChannel = GuildUtil.find_channel_by_name(context.guild, ChannelNames.MatchesChannel.value)
-        message: Message = await matches_channel.send('...')
+        matches_channel: TextChannel | None = discord.utils.get(
+            context.guild.channels,
+            name=ChannelNames.MatchesChannel.value
+        )
 
+        if not matches_channel:
+            await context.respond('The matches channel does not exist. You cannot create a lobby.')
+            return
+
+        message: Message = await matches_channel.send('...')
         creator: Player = await Player.find_or_create(context.user.id)
 
         lobby: Lobby = await Lobby.create(

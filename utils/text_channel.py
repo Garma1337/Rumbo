@@ -9,6 +9,7 @@ from lib.services import config
 
 
 class ChannelNames(Enum):
+    BotDmChannel = 'bot-dms'
     LiveStreamsChannel = 'streams'
     BotSpamChannel = 'bot-spam'
     MatchesChannel = 'matches'
